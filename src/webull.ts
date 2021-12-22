@@ -45,7 +45,7 @@ class Webull {
                 if (error.response.body.code == 'auth.token.req') { // need phone code
                     console.log('SMS code needed')
                     await this.getVerificationCode()
-                    const code = this.verificationCodePrompt()
+                    const code = await this.verificationCodePrompt()
                     await this.checkVerificationCode(code)
                 }
                 return ''
@@ -69,17 +69,16 @@ class Webull {
         return tradeTabResponse
     }
 
-    private verificationCodePrompt(): string { // TODO fix prompt
+    private async verificationCodePrompt(): Promise<string> {
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
         })
 
-        let code: string = ''
+        return new Promise((resolve) => {
+            rl.question('Input SMS verification code: ', answer => { rl.close(); resolve(answer) })
 
-        rl.question('Input SMS verification code: ', answer => { code = answer; rl.close() })
-
-        return code
+        })
     }
     /*
     Verification code types
