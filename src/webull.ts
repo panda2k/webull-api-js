@@ -1,6 +1,6 @@
 import crypto = require('crypto')
 import got, { Got } from 'got/dist/source'
-import {  LoginResponse, TradeTabResponse, TradeTokenResponse } from './types'
+import {  AccountOverview, LoginResponse, Trade, TradeTabResponse, TradeTokenResponse } from './types'
 import readline = require('readline')
 
 class Webull {
@@ -38,7 +38,7 @@ class Webull {
         this.accessToken = loginResponse.accessToken
         this.refreshToken = loginResponse.refreshToken
 
-        this.client = this.client.extend({headers: {did: this.deviceId, access_token: this.accessToken}})
+        this.client = this.client.extend({headers: {did: this.deviceId, access_token: this.accessToken}, responseType: 'json'})
 
         this.tradeToken = await this.getTradingToken()
             .catch(async error => {
@@ -50,15 +50,58 @@ class Webull {
                 }
                 return ''
             }) // TODO account for auth tokens
+
+        this.client = this.client.extend({headers: { did: this.deviceId, access_token: this.accessToken, t_token: this.tradeToken }, responseType: 'json'})
                 
-        const accounts = await this.getAccounts()
-        for (let i = 0; i++; i < accounts.accountList.length) {
-            if (accounts.accountList[i].brokerShortName == "INDV") { // only support individual accounts
-                this.accountId = accounts.accountList[i].secAccountId.toString()
+        const accounts = (await this.getAccounts()).accountList
+
+        for (let i = 0; i < accounts.length; i++ ) {
+            if (accounts[i].brokerShortName == "INDV") { // only support individual accounts
+                this.accountId = accounts[i].secAccountId.toString()
+                this.client = this.client.extend({headers: { did: this.deviceId, access_token: this.accessToken, t_token: this.tradeToken, lzone: accounts[i].rzone }, responseType: 'json'})
             }
         }
 
+        console.log(typeof this.accessToken)
+
         console.log('Logged in')
+    }
+
+    async getAccountOverview(): Promise<AccountOverview> {
+        const accountOverview = (await this.client.get(
+            `https://ustrade.webullfinance.com/api/trading/v1/webull/account/accountAssetSummary/v2?secAccountId=${this.accountId}`
+        )).body as any as AccountOverview
+
+        return accountOverview
+    }
+
+    /*
+    Fetches trades
+    startDate: date represented as string for earlier date to fetch trades from YYYY-MM-DD
+    endDate: date represented as string for latest date to fetch trades from YYYY-MM-DD
+    lastCreateTime: a number used for pagination. take this number from the earliest order's createTime0
+    pageSize: trades per page
+    */
+
+    async getTrades(startDate: string, endDate: string, lastCreateTime: number, pageSize: number): Promise<Array<Trade>> {
+        const trades = (await this.client.post(
+            `https://u1strade.webullfinance.com/api/trading/v1/webull/order/list?secAccountId=${this.accountId}`,
+            {
+                json: {
+                    dateType: "ORDER",
+                    pageSize: pageSize,
+                    startTimeStr: startDate,
+                    endTimeStr: endDate,
+                    action: null,
+                    lastCreateTime0: lastCreateTime,
+                    secAccountId: this.accountId,
+                    status: "all"
+                },
+                headers: { 'content-type': 'application/json' }
+            }
+        )).body as any as Trade[]
+
+        return trades
     }
 
     private async getAccounts(): Promise<TradeTabResponse> {
