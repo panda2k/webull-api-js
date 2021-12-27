@@ -1,4 +1,4 @@
-import Webull = require('./webull')
+import Webull = require('./index')
 import config from '../config.json'
 
 (async() => {
