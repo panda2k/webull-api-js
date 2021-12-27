@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "build-prod": "tsc -p tsconfig.prod.json",
     "test": "node ./build/src/webull.test.js"
   },
   "author": "",
