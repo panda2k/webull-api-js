@@ -1,6 +1,6 @@
 {
   "name": "webull",
-  "version": "0.1.15",
+  "version": "0.2.0",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
@@ -12,6 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "got": "^11.8.3"
+    "axios": "^0.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.5"
   }
 }

@@ -4,7 +4,7 @@ import config from '../config.json'
 (async() => {
     const webull = new Webull(config.email, config.password, config.tradingPin)
     await webull.login()
-    console.log(await webull.getAccountOverview())
+    console.log((await webull.getAccountOverview()).accountSummaryVO.accountType)
     const now = new Date()
 
 
