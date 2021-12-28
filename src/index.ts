@@ -2,6 +2,7 @@ import md5 from 'crypto-js/md5'
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { AccountOverview, LoginResponse, Trade, TradeTabResponse, TradeTokenResponse } from './types'
 import uuid = require('uuid')
+import { InvalidTradingPinError, LoginError } from './errors'
 
 class Webull {
     email: string
@@ -30,23 +31,34 @@ class Webull {
     }
 
     async login() {
-
-        const loginResponse: AxiosResponse<LoginResponse> = await this.client.post(
-            'https://userapi.webull.com/api/passport/login/v5/account',
-            {
-                "account": this.email,
-                "accountType": "2",
-                "pwd": md5('wl_app-a&b@!423^' + this.password).toString(), // password hash
-                "deviceId": this.deviceId,
-                "regionId": 1
+        try {
+            const loginResponse: AxiosResponse<LoginResponse> = await this.client.post(
+                'https://userapi.webull.com/api/passport/login/v5/account',
+                {
+                    "account": this.email,
+                    "accountType": "2",
+                    "pwd": md5('wl_app-a&b@!423^' + this.password).toString(), // password hash
+                    "deviceId": this.deviceId,
+                    "regionId": 1
+                }
+            )
+            this.accessToken = loginResponse.data.accessToken
+            this.refreshToken = loginResponse.data.refreshToken
+        } catch (error: any) {
+            if (error.response) {
+                if (error.response.data.code == "account.pwd.mismatch") {
+                    throw new LoginError(`Invalid email or password. ${error.response.data.data.allowPwdErrorTime} attempts remaining.`, error.response.data.data.allowPwdErrorTime)
+                } else {
+                    throw new Error(error.response.data)
+                }
+            } else {
+                throw error
             }
-        )
-        this.accessToken = loginResponse.data.accessToken
-        this.refreshToken = loginResponse.data.refreshToken
-
+        }
         this.client.defaults.headers.common['access_token'] = this.accessToken
 
-        this.tradeToken = await this.getTradingToken()
+        try {
+            this.tradeToken = await this.getTradingToken()
             .catch(async error => {
                 if (error.response.body.code == 'auth.token.req') { // need phone code
                     console.log('SMS code needed')
@@ -56,9 +68,19 @@ class Webull {
                 }
                 return ''
             }) // TODO account for auth tokens
+            this.client.defaults.headers.common['t_token'] = this.tradeToken   
+        } catch (error: any) {
+            if (error.response) {
+                if (error.response.data.code == "trade.pwd.invalid") {
+                    throw new InvalidTradingPinError(`Invalid trading pin. ${error.response.data.data.retry} attempts remaining`, error.response.data.data.retry)
+                } else {
+                    throw new Error(error.response.data)
+                }
+            } else {
+                throw error
+            }
+        }
 
-        this.client.defaults.headers.common['t_token'] = this.tradeToken
-                
         const accounts = (await this.getAccounts()).accountList
 
         for (let i = 0; i < accounts.length; i++ ) {
