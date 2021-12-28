@@ -16,5 +16,9 @@
   },
   "devDependencies": {
     "@types/node": "^17.0.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/panda2k/webull-api-js.git"
   }
 }
