@@ -18,7 +18,13 @@ class Webull {
         this.email = email
         this.password = password
         this.deviceId = uuid.v4().replace(/-/g, "")
-        this.client = axios.create({ headers: { did: this.deviceId }, responseType: 'json' })
+        this.client = axios.create({ 
+            headers: { 
+                did: this.deviceId, 
+                origin: 'https://app.webull.com' 
+            }, 
+            responseType: 'json' 
+        })
         this.tradingPin = tradingPin
         axios.create
     }
