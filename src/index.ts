@@ -59,20 +59,17 @@ class Webull {
 
         try {
             this.tradeToken = await this.getTradingToken()
-            .catch(async error => {
-                if (error.response.body.code == 'auth.token.req') { // need phone code
-                    console.log('SMS code needed')
-                    await this.getVerificationCode()
-                    // need solution for getting code
-                    //await this.checkVerificationCode("")
-                }
-                return ''
-            }) // TODO account for auth tokens
             this.client.defaults.headers.common['t_token'] = this.tradeToken   
         } catch (error: any) {
             if (error.response) {
                 if (error.response.data.code == "trade.pwd.invalid") {
                     throw new InvalidTradingPinError(`Invalid trading pin. ${error.response.data.data.retry} attempts remaining`, error.response.data.data.retry)
+                } else if (error.response.body.code == 'auth.token.req') { // need phone code
+                    console.log('SMS code needed')
+                    await this.getVerificationCode()
+                    // need solution for getting code
+                    //await this.checkVerificationCode("")
+                    this.tradeToken = ''
                 } else {
                     throw new Error(error.response.data)
                 }
