@@ -1,7 +1,6 @@
 import crypto = require('crypto')
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { AccountOverview, LoginResponse, Trade, TradeTabResponse, TradeTokenResponse } from './types'
-import readline = require('readline')
 
 class Webull {
     email: string
@@ -44,8 +43,8 @@ class Webull {
                 if (error.response.body.code == 'auth.token.req') { // need phone code
                     console.log('SMS code needed')
                     await this.getVerificationCode()
-                    const code = await this.verificationCodePrompt()
-                    await this.checkVerificationCode(code)
+                    // need solution for getting code
+                    //await this.checkVerificationCode("")
                 }
                 return ''
             }) // TODO account for auth tokens
@@ -108,19 +107,7 @@ class Webull {
         return tradeTabResponse.data
     }
 
-    private async verificationCodePrompt(): Promise<string> {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        })
-
-        return new Promise((resolve) => {
-            rl.question('Input SMS verification code: ', answer => { rl.close(); resolve(answer) })
-
-        })
-    }
     /*
-    This function needs to be changed
     Verification code types
     5: email
     */
