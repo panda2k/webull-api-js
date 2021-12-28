@@ -1,6 +1,6 @@
 {
   "name": "webull",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
@@ -12,7 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.24.0"
+    "@types/crypto-js": "^4.0.2",
+    "@types/uuid": "^8.3.3",
+    "axios": "^0.24.0",
+    "crypto-js": "^4.1.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/node": "^17.0.5"

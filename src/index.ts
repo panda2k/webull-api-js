@@ -1,6 +1,7 @@
-import crypto = require('crypto')
+import md5 from 'crypto-js/md5'
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { AccountOverview, LoginResponse, Trade, TradeTabResponse, TradeTokenResponse } from './types'
+import uuid = require('uuid')
 
 class Webull {
     email: string
@@ -16,19 +17,20 @@ class Webull {
     constructor(email: string, password: string, tradingPin: string) {
         this.email = email
         this.password = password
-        this.deviceId = crypto.randomBytes(16).toString('hex')
+        this.deviceId = uuid.v4().replace(/-/g, "")
         this.client = axios.create({ headers: { did: this.deviceId }, responseType: 'json' })
         this.tradingPin = tradingPin
         axios.create
     }
 
     async login() {
+
         const loginResponse: AxiosResponse<LoginResponse> = await this.client.post(
             'https://userapi.webull.com/api/passport/login/v5/account',
             {
                 "account": this.email,
                 "accountType": "2",
-                "pwd": crypto.createHash('md5').update('wl_app-a&b@!423^' + this.password).digest('hex'), // password hash
+                "pwd": md5('wl_app-a&b@!423^' + this.password).toString(), // password hash
                 "deviceId": this.deviceId,
                 "regionId": 1
             }
@@ -144,7 +146,7 @@ class Webull {
         const tokenResponse: AxiosResponse<TradeTokenResponse> = await this.client.post(
             'https://trade.webullfintech.com/api/trading/v1/global/trade/login',
             {
-                pwd: crypto.createHash('md5').update('wl_app-a&b@!423^' + this.tradingPin).digest('hex')
+                pwd: md5('wl_app-a&b@!423^' + this.tradingPin).toString()
             }
         )
 
