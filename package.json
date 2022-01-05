@@ -1,6 +1,6 @@
 {
   "name": "webull",
-  "version": "0.2.23",
+  "version": "0.2.3",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",

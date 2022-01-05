@@ -13,3 +13,9 @@ export class InvalidTradingPinError extends Error {
         this.remainingAttempts = remainingAttempts
     }
 }
+
+export class TwoStepNeeded extends Error {
+    constructor(msg: string) {
+        super(msg)
+    }
+}
