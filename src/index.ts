@@ -33,11 +33,11 @@ class Webull {
                 headers: {
                     did: options.deviceId,
                     origin: 'https://app.webull.com',
-                    lzone: options.lzone,
                     access_token: options.accessToken
                 },
                 responseType: 'json'
             })
+            this.client.defaults.headers.common['lzone'] = options.lzone
             this.accessToken = options.accessToken
             this.refreshToken = options.refreshToken
             this.accountId = options.accountId
