@@ -26,7 +26,13 @@ class Webull {
     accountId: string = ''
     twoFactorPin: string = ''
     
-    // specifiying import options ignores all other params
+    /**
+     * @constructor
+     * @param email the email of the account
+     * @param password the password of the account
+     * @param tradingPin the trading pin of the account
+     * @param options import data into the webull object. ignores all other params if this is specified
+     */
     constructor(email: string, password: string, tradingPin: string, options?: ImportOptions) {
         if (options) {
             this.client = axios.create({
@@ -61,6 +67,9 @@ class Webull {
         }
     }
 
+    /**
+     * Logs in to the webull account. Required even if object is intialized with options instead of normal params.
+     */
     async login() {
         if (this.accessToken == "") { // check if needs login
             const data: any = {
@@ -129,6 +138,11 @@ class Webull {
         }
     }
 
+    /**
+     * Gets overview and details of an account
+     * @returns AccountOverview object
+     */
+
     async getAccountOverview(): Promise<AccountOverview> {
         const accountOverview: AxiosResponse<AccountOverview> = await this.client.get(
             `https://ustrade.webullfinance.com/api/trading/v1/webull/account/accountAssetSummary/v2?secAccountId=${this.accountId}`
@@ -137,12 +151,12 @@ class Webull {
         return accountOverview.data
     }
 
-    /*
+    /**
     Fetches trades
-    startDate: date represented as string for earlier date to fetch trades from YYYY-MM-DD
-    endDate: date represented as string for latest date to fetch trades from YYYY-MM-DD
-    lastCreateTime: a number used for pagination. take this number from the earliest order's createTime0
-    pageSize: trades per page
+    @param startDate date represented as string for earlier date to fetch trades from YYYY-MM-DD
+    @param endDate date represented as string for latest date to fetch trades from YYYY-MM-DD
+    @param lastCreateTime a number used for pagination. take this number from the earliest order's createTime0
+    @param pageSize trades per page
     */
 
     async getTrades(startDate: string, endDate: string, lastCreateTime: number, pageSize: number): Promise<Array<Trade>> {
@@ -163,6 +177,11 @@ class Webull {
         return trades.data
     }
 
+    /**
+     * Gets a list of accounts under a webull account
+     * @returns A list of webull accounts under a login
+     */
+
     private async getAccounts(): Promise<TradeTabResponse> {
         const tradeTabResponse: AxiosResponse<TradeTabResponse> = (await this.client.get(
             'https://trade.webullfintech.com/api/trading/v1/global/tradetab/display'
@@ -171,10 +190,11 @@ class Webull {
         return tradeTabResponse.data
     }
 
-    /*
-    Verification code types
-    5: email
-    */
+    /**
+     * Requests a verification code. Required when login results in TwoStepNeeded error.
+     * Verification code types
+     * 5: email
+     */
 
     async getVerificationCode(): Promise<void> { 
         const getVerificationCodeResponse = await this.client.post(
@@ -187,6 +207,12 @@ class Webull {
         )
         console.log(getVerificationCodeResponse.data)
     }
+
+    /**
+     * 
+     * @param code the verification code
+     * @returns true or false depending on verification code check response
+     */
 
     async checkVerificationCode(code: string): Promise<boolean> {
         const verificationResponse = await this.client.post(
@@ -201,6 +227,11 @@ class Webull {
 
         return verificationResponse.data.success
     }
+
+    /**
+     * Fetches the trading token required to make trades
+     * @returns The Webull trading token
+     */
 
     private async getTradingToken(): Promise<string> {
         const tokenResponse: AxiosResponse<TradeTokenResponse> = await this.client.post(
