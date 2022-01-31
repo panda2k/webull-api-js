@@ -194,22 +194,22 @@ interface RiskInfo {
 
 export interface Trade {
     orderId: string,
-        comboId: string,
-        comboType: string,
-        comboTickerType: string,
-        optionStrategy: string,
-        outsideRegularTradingHour: boolean,
-        quantity: string,
-        filledQuantity: string,
-        action: string,
-        status: string,
-        statusName: string,
-        timeInForce: string,
-        orderType: string,
-        lmtPrice: string,
-        canModify: boolean,
-        canCancel: boolean,
-        items: Item[],
+    comboId: string,
+    comboType: string,
+    comboTickerType: string,
+    optionStrategy: string,
+    outsideRegularTradingHour: boolean,
+    quantity: string,
+    filledQuantity: string,
+    action: string,
+    status: string,
+    statusName: string,
+    timeInForce: string,
+    orderType: string,
+    lmtPrice: string,
+    canModify: boolean,
+    canCancel: boolean,
+    items: Item[],
 }
 
 interface Item {
@@ -274,3 +274,31 @@ interface Item {
         amOrPm: string,
         expirationType: number,
 }
+
+export interface Ticker {
+    tickerId: number,
+    exchangeId: number,
+    type: number,
+    secType: number[]
+    regionId: number,
+    regionCode: string,
+    currencyId: number,
+    currencyCode: string,
+    name: string,
+    symbol: string,
+    disSymbol: string,
+    disExchangeCode: string,
+    exchangeCode: string,
+    listStatus: number,
+    template: string,
+    derivativeSupport: number,
+    tinyName: string
+}
+
+export interface TickerQueryResponse {
+    data: Ticker[],
+    hasMore: boolean
+}
+
+export type Status = "Working" | "Filled" | "Cancelled" | "Pending" | "Partial filled" | "Failed" | "All"
+

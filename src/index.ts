@@ -1,8 +1,10 @@
 import md5 from 'crypto-js/md5'
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
-import { AccountOverview, LoginResponse, Trade, TradeTabResponse, TradeTokenResponse } from './types'
+import { AccountOverview, LoginResponse, Status, TickerQueryResponse, Trade, TradeTabResponse, TradeTokenResponse } from './types'
 import uuid = require('uuid')
 import { InvalidTradingPinError, LoginError, TwoStepNeeded } from './errors'
+import mqtt = require('mqtt')
+import { MqttClient } from 'mqtt'
 
 interface ImportOptions {
     deviceId: string,
@@ -155,11 +157,12 @@ class Webull {
     Fetches trades
     @param startDate date represented as string for earlier date to fetch trades from YYYY-MM-DD
     @param endDate date represented as string for latest date to fetch trades from YYYY-MM-DD
-    @param lastCreateTime a number used for pagination. take this number from the earliest order's createTime0
+    @param lastCreateTime a number used for pagination. take this number from the earliest order's createTime0. Set this to 0 if there is no previous request
     @param pageSize trades per page
+    @param status the order status to filter by. "Working" | "Filled" | "Cancelled" | "Pending" | "Partially filled" | "Failed" | "All"
     */
 
-    async getTrades(startDate: string, endDate: string, lastCreateTime: number, pageSize: number): Promise<Array<Trade>> {
+    async getTrades(startDate: string, endDate: string, lastCreateTime: number, pageSize: number, status: Status): Promise<Array<Trade>> {
         const trades: AxiosResponse<Trade[]> = await this.client.post(
             `https://u1strade.webullfinance.com/api/trading/v1/webull/order/list?secAccountId=${this.accountId}`,
             {
@@ -170,10 +173,9 @@ class Webull {
                 action: null,
                 lastCreateTime0: lastCreateTime,
                 secAccountId: this.accountId,
-                status: "all"
+                status: status
             }
         )
-
         return trades.data
     }
 
@@ -227,6 +229,21 @@ class Webull {
 
         return verificationResponse.data.success
     }
+
+    /**
+     * @param ticker the ticker search term
+     * @param pageIndex optional for different pages of a query. defaults to 1
+     * @param pageSize the amount of results per response page. defaults to 20
+     * @returns a TickerQueryResponse. Contains an array of ticker objects
+     */
+    async queryTickers(ticker: string, pageIndex: number = 1, pageSize: number = 20): Promise<TickerQueryResponse> {
+        const tickerQueryResponse = (await this.client.get(
+            `https://quotes-gw.webullfintech.com/api/search/pc/tickers?keyword=${ticker}&pageIndex=1&pageSize=20`
+        )).data as unknown as TickerQueryResponse
+
+        return tickerQueryResponse
+    }
+
 
     /**
      * Fetches the trading token required to make trades

@@ -1,6 +1,6 @@
 {
   "name": "webull",
-  "version": "0.2.32",
+  "version": "0.2.33",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
@@ -16,6 +16,7 @@
     "@types/uuid": "^8.3.3",
     "axios": "^0.24.0",
     "crypto-js": "^4.1.1",
+    "mqtt": "^4.3.4",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
